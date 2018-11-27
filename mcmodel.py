@@ -76,5 +76,5 @@ class Media(Base):
 
 
 
-engine = create_engine('sqlite:///mcollector.sqlite3')
+engine = create_engine("sqlite:///mcollector.sqlite3")
 Base.metadata.create_all(engine)
