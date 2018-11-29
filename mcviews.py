@@ -2,7 +2,7 @@
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-# from database_setup import Base, Restaurant, MenuItem
+from mcmodel import Base, User, Media
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 
 app = Flask(__name__)
@@ -21,8 +21,15 @@ def connectDB():
 # home page, shows list of collections and latest entries
 @app.route("/")
 def landingPage():
-    # return "Home, it's working, yay!"
-    return render_template("home.html")
+    connectDB()
+    collections = session.query(User.id, User.first_name, User.last_name).all()
+    session.close()
+    fullnames = []
+    for row in collections:
+        x = row[0], row[1] + " " + row[2]
+        fullnames.append(x)
+    print(fullnames)
+    return render_template("home.html", fullnames=fullnames)
 
 # show individual collection
 @app.route("/collections/<int:id>")
