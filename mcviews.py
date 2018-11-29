@@ -18,9 +18,8 @@ def connectDB():
     DBSession = sessionmaker(bind=engine)
     session = DBSession()
 
-# home page, shows list of collections and latest entries
-@app.route("/")
-def landingPage():
+# returns list of tuples containing collection names for nav column
+def getNames():
     connectDB()
     collections = session.query(User.id, User.first_name, User.last_name).all()
     session.close()
@@ -28,13 +27,45 @@ def landingPage():
     for row in collections:
         x = row[0], row[1] + " " + row[2]
         fullnames.append(x)
-    print(fullnames)
+    return fullnames
+
+# return user row
+def getUser(id):
+    connectDB()
+    query = session.query(User).filter(User.id == id).scalar()
+    session.close()
+    return query
+
+# home page, shows list of collections and latest entries
+@app.route("/")
+def landingPage():
+    fullnames = getNames()
     return render_template("home.html", fullnames=fullnames)
 
 # show individual collection
 @app.route("/collections/<int:id>")
 def showCollection(id):
-    return "Single collection page: id={}".format(id)
+    fullnames = getNames()
+    connectDB()
+    query = session.query(Media).filter(Media.user_id == id).all()
+    media = []
+    for row in query:
+        x = {
+            "id" :  row.id,
+            "artist" :  row.artist,
+            "title" :  row.title,
+            "genre" :  row.genre,
+            "type" :  row.type,
+            "medium" :  row.medium,
+            "user_id" :  row.user_id
+        }
+        media.append(x)
+        user = getUser(id)
+        usermeta = {
+        "fullname" :  user.first_name + " " + user.last_name,
+        "id" :  user.id
+        }
+    return render_template("collections.html", fullnames=fullnames, media=media, user=usermeta)
 
 # edit collection description
 @app.route("/collections/<int:id>/edit", methods=["GET", "POST"])
@@ -64,20 +95,22 @@ def editMedia(user_id, media_id):
         return "POST:  Edit media page: user_id={} - media_id={}".format(user_id, media_id)
 
 # delete media item from collection
-@app.route("/collections/<int:user_id>/media/<int:media_id>/delete", methods=["DELETE"])
+@app.route("/collections/<int:user_id>/media/<int:media_id>/delete", methods=["GET", "DELETE"])
 def deleteMedia(user_id, media_id):
+    if request.method == "GET":
+        return "Delete media entry confirmation page: user_id={} - media_id={}".format(user_id, media_id)
     if request.method == "DELETE":
         return "Delete media entry: user_id={} - media_id={}".format(user_id, media_id)
 
-@app.route("/login")
+@app.route("/auth/login")
 def loginPage():
     return "login page"
 
-@app.route("/registration")
+@app.route("/auth/registration")
 def registrationPage():
     return "registration page"
 
-@app.route("/logout")
+@app.route("/auth/logout")
 def logoutPage():
     return "logout page"
 

@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
+  <div class="">
+    <br>
+    {% block header %}
+    <h2>{% block title %}{{ user["fullname"] }}'s Collection{% endblock %}</h2>
+    {% endblock %}
+    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+    <br>
+    <h3>Media Summary</h3>
+    <div class="table-responsive">
+      <table class="table table-striped table-sm">
+        <thead>
+          <tr>
+            <th>Artist</th>
+            <th>Title</th>
+            <th>Genre</th>
+            <th>Type</th>
+            <th>Format</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+
+          {% for row in media %}
+          <tr>
+            <td>{{ row["artist"] }}</td>
+            <td>{{ row["title"] }}</td>
+            <td>{{ row["genre"] }}</td>
+            <td>{{ row["type"] }}</td>
+            <td>{{ row["medium"] }}</td>
+            <td><a href="{{ url_for('editMedia', user_id=row["user_id"], media_id=row["id"]) }}">Edit</a> / <a href="{{ url_for('deleteMedia', user_id=row["user_id"], media_id=row["id"]) }}">Delete</a></td>
+          </tr>
+          {% endfor %}
+
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+{% endblock %}
