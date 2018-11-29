@@ -22,7 +22,7 @@ def connectDB():
 @app.route("/")
 def landingPage():
     # return "Home, it's working, yay!"
-    return render_template("index.html")
+    return render_template("home.html")
 
 # show individual collection
 @app.route("/collections/<int:id>")
