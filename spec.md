@@ -16,8 +16,8 @@ The application will provide API endpoints to allow for the integration of Music
 - first_name
 - last_name
 - email
-- password_hash (sha256)
-- password_salt (8 random alpha-numeric chars)
+- password_hash (sha256, 64 char)
+- password_salt (16 random alpha-numeric chars)
 - auth_token
 - description (of collection)
 - picture

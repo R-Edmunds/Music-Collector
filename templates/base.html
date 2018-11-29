@@ -18,7 +18,7 @@
 
   <body>
     <nav class="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
-      <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#"><div class="glyphicon glyphicon-music">
+      <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="{{ url_for('landingPage') }}"><div class="glyphicon glyphicon-music">
 
       </div>Music Collector</a>
       <!-- <input class="form-control form-control-dark w-100" type="text" placeholder="Search" aria-label="Search"> -->
@@ -35,22 +35,22 @@
           <div class="sidebar-sticky">
             <ul class="nav flex-column">
               <li class="nav-item">
-                <a class="nav-link active" href="#">
+                <a class="nav-link active" href="{{ url_for('landingPage') }}">
                   <span data-feather="home"></span>
                   Home
                 </a>
               </li>
 
-
+              <!-- nav bar collections loop start -->
               {% for row in fullnames %}
               <li class="nav-item">
-                <a class="nav-link" href="{{url_for('showCollection', id=row[0]) }}">
+                <a class="nav-link" href="{{ url_for('showCollection', id=row[0]) }}">
                   <span data-feather="layers"></span>
                   {{ row[1] }}
                 </a>
               </li>
               {% endfor %}
-
+              <!-- nav bar collections loop end -->
 
             </ul>
           </div>
