@@ -35,8 +35,14 @@
           <div class="sidebar-sticky">
             <ul class="nav flex-column">
               <li class="nav-item">
+
+                {% if not user %}
                 <a class="nav-link active" href="{{ url_for('landingPage') }}">
-                  <span data-feather="home"></span>
+                {% else %}
+                <a class="nav-link" href="{{ url_for('landingPage') }}">
+                {% endif %}
+
+                <span data-feather="home"></span>
                   Home
                 </a>
               </li>
@@ -44,7 +50,12 @@
               <!-- nav bar collections loop start -->
               {% for row in fullnames %}
               <li class="nav-item">
+
+                {% if not user %}
                 <a class="nav-link" href="{{ url_for('showCollection', id=row[0]) }}">
+                {% else %}
+                <a class="nav-link{% if user["id"]==row[0] %} active{% endif %}" href="{{ url_for('showCollection', id=row[0]) }}">
+                  {% endif %}
                   <span data-feather="layers"></span>
                   {{ row[1] }}
                 </a>
