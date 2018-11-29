@@ -21,7 +21,8 @@ def connectDB():
 # home page, shows list of collections and latest entries
 @app.route("/")
 def landingPage():
-    return "Home, it's working, yay!"
+    # return "Home, it's working, yay!"
+    return render_template("index.html")
 
 # show individual collection
 @app.route("/collections/<int:id>")

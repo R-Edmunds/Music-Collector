@@ -16,6 +16,8 @@ class User(Base):
     first_name = Column(String(32))
     last_name = Column(String(32))
     email = Column(String(64))
+    password_hash = Column(String(64))
+    password_salt = Column(String(16))
     picture = Column(String(64))
     auth_token = Column(String(64))
     description = Column(String(256))
@@ -30,8 +32,6 @@ class Media(Base):
     medium = Column(String(32))
     artist = Column(String(64))
     title = Column(String(128))
-
-
 
 
 
