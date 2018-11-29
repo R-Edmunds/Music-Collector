@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, func
 from sqlalchemy.orm import sessionmaker
 from mcmodel import Base, User, Media
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
@@ -40,7 +40,20 @@ def getUser(id):
 @app.route("/")
 def landingPage():
     fullnames = getNames()
-    return render_template("home.html", fullnames=fullnames)
+    landinglist = []
+    connectDB()
+    # get 5 biggest collections
+    query = session.query(User.id, User.first_name, User.last_name, func.count(Media.id)).outerjoin(Media).group_by(User.id).order_by(func.count(Media.id).desc()).limit(5)
+    session.close()
+    topfive = []
+    for row in query:
+        x = {
+            "id" : row[0],
+            "fullname" : row[1] + " " + row[2],
+            "count" : row[3]
+        }
+        topfive.append(x)
+    return render_template("home.html", fullnames=fullnames, topfive=topfive)
 
 # show individual collection
 @app.route("/collections/<int:id>")
