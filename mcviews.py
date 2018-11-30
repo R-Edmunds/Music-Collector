@@ -107,7 +107,24 @@ def showMedia(user_id, media_id):
 @app.route("/collections/<int:user_id>/media/<int:media_id>/edit", methods=["GET", "POST"])
 def editMedia(user_id, media_id):
     if request.method == "GET":
-        return "Edit media page: user_id={} - media_id={}".format(user_id, media_id)
+        fullnames = getNames()
+        user = getUser(user_id)
+        usermeta = {
+            "id" :  user.id,
+            "fullname" :  user.first_name + " " + user.last_name,
+            "description" :  user.description
+        }
+
+        # get media detail
+        connectDB()
+        query = session.query(Media).filter(Media.user_id==user_id, Media.id==media_id).scalar()
+        session.close()
+        print(query)
+        formats = "vinyl", "cd", "cassette", "other"
+        genres = "blues", "classical", "country", "data", "folk", "jazz", "newage", "reggae", "rock", "soundtrack", "misc"
+        types = "album", "ep", "lp", "mixtape", "single"
+        # return "Edit media page: user_id={} - media_id={}".format(user_id, media_id)
+        return render_template("editmedia.html", fullnames=fullnames, user=usermeta, media=query, genres=genres, formats=formats, types=types)
     if request.method == "POST":
         return "POST:  Edit media page: user_id={} - media_id={}".format(user_id, media_id)
 
