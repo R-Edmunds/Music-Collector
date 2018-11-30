@@ -23,7 +23,8 @@
 
           {% for row in topfive %}
           <tr>
-            <td>{{ row["fullname"] }}</td>
+            <a href="{{ url_for('showCollection', id=row["id"]) }}">
+            <td><a href="{{ url_for('showCollection', id=row["id"]) }}">{{ row["fullname"] }}</a></td>
             <td>{{ row["count"] }}</td>
           </tr>
           {% endfor %}
