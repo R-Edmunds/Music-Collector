@@ -61,6 +61,7 @@ def showCollection(id):
     fullnames = getNames()
     connectDB()
     query = session.query(Media).filter(Media.user_id == id).all()
+    session.close()
     media = []
     for row in query:
         x = {
@@ -75,8 +76,9 @@ def showCollection(id):
         media.append(x)
         user = getUser(id)
         usermeta = {
+        "id" :  user.id,
         "fullname" :  user.first_name + " " + user.last_name,
-        "id" :  user.id
+        "description" :  user.description
         }
     return render_template("collections.html", fullnames=fullnames, media=media, user=usermeta)
 
