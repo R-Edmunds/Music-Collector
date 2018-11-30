@@ -91,9 +91,11 @@ def editCollection(id):
         return "POST:  Edit collection description page: id={}".format(id)
 
 # delete all media entries inside collection
-@app.route("/collections/<int:id>/clear", methods=["DELETE"])
+@app.route("/collections/<int:id>/clear", methods=["GET", "POST"])
 def emptyCollection(id):
-    if request.method == "DELETE":
+    if request.method == "GET":
+        return "Delete all media in collection confirmation page: id={}".format(id)
+    if request.method == "POST":
         return "Delete all media in collection: id={}".format(id)
 
 # show media detail page
@@ -110,11 +112,11 @@ def editMedia(user_id, media_id):
         return "POST:  Edit media page: user_id={} - media_id={}".format(user_id, media_id)
 
 # delete media item from collection
-@app.route("/collections/<int:user_id>/media/<int:media_id>/delete", methods=["GET", "DELETE"])
+@app.route("/collections/<int:user_id>/media/<int:media_id>/delete", methods=["GET", "POST"])
 def deleteMedia(user_id, media_id):
     if request.method == "GET":
         return "Delete media entry confirmation page: user_id={} - media_id={}".format(user_id, media_id)
-    if request.method == "DELETE":
+    if request.method == "POST":
         return "Delete media entry: user_id={} - media_id={}".format(user_id, media_id)
 
 @app.route("/auth/login")
