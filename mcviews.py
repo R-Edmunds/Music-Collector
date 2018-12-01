@@ -144,6 +144,38 @@ def editMedia(user_id, media_id):
         flash("*** Media item successfully edited***")
         return showCollection(user_id)
 
+# add new media item
+@app.route("/collections/<int:user_id>/media/new", methods=["GET", "POST"])
+def newMedia(user_id):
+    if request.method == "GET":
+        fullnames = getNames()
+        user = getUser(user_id)
+        usermeta = {
+            "id" :  user.id,
+            "fullname" :  user.first_name + " " + user.last_name,
+            "description" :  user.description
+        }
+        # return "New media item page user_id: {}".format(user_id)
+        return render_template("newmedia.html", fullnames=fullnames, user=usermeta, constants=constants)
+    elif request.method == "POST":
+        form = request.form
+        add = Media(
+            user_id = user_id,
+            artist = form["artist"],
+            title = form["title"],
+            genre = form["genre"],
+            type = form["type"],
+            medium = form["format"]
+        )
+        connectDB()
+        session.add(add)
+        session.commit()
+        session.close()
+        flash("*** New media item successfully added ***")
+        return showCollection(user_id)
+        # return "POST: New media item page user_id: {}".format(user_id)
+
+
 # delete media item from collection
 @app.route("/collections/<int:user_id>/media/<int:media_id>/delete", methods=["GET", "POST"])
 def deleteMedia(user_id, media_id):
