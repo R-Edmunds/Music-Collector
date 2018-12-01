@@ -25,6 +25,7 @@ def connectDB():
     DBSession = sessionmaker(bind=engine)
     session = DBSession()
 
+
 # returns list of tuples containing collection names for nav column
 def getNames():
     connectDB()
@@ -36,12 +37,25 @@ def getNames():
         fullnames.append(x)
     return fullnames
 
+
 # return user row
-def getUser(id):
+def getUser(user_id):
     connectDB()
-    query = session.query(User).filter(User.id == id).scalar()
+    query = session.query(User).filter(User.id == user_id).scalar()
     session.close()
     return query
+
+
+# get user meta data
+def getUsermeta(user_id):
+    user = getUser(user_id)
+    usermeta = {
+        "id" :  user.id,
+        "fullname" :  user.first_name + " " + user.last_name,
+        "description" :  user.description
+    }
+    return usermeta
+
 
 # home page, shows list of collections and latest entries
 @app.route("/")
@@ -62,12 +76,16 @@ def landingPage():
         topfive.append(x)
     return render_template("home.html", fullnames=fullnames, topfive=topfive)
 
+
 # show individual collection
-@app.route("/collections/<int:id>")
-def showCollection(id):
+@app.route("/collections/<int:user_id>")
+def showCollection(user_id):
     fullnames = getNames()
+    usermeta = getUsermeta(user_id)
+    print(usermeta)
+
     connectDB()
-    query = session.query(Media).filter(Media.user_id == id).all()
+    query = session.query(Media).filter(Media.user_id == user_id).all()
     session.close()
     media = []
     for row in query:
@@ -81,13 +99,8 @@ def showCollection(id):
             "user_id" :  row.user_id
         }
         media.append(x)
-        user = getUser(id)
-        usermeta = {
-        "id" :  user.id,
-        "fullname" :  user.first_name + " " + user.last_name,
-        "description" :  user.description
-        }
-    return render_template("collections.html", fullnames=fullnames, media=media, user=usermeta)
+    return render_template("collections.html", fullnames=fullnames, user=usermeta, media=media)
+
 
 # edit collection description
 @app.route("/collections/<int:user_id>/description/edit", methods=["GET", "POST"])
@@ -116,6 +129,7 @@ def editCollection(user_id):
             flash("*** Error: description not edited ***")
             return showCollection(user_id)
 
+
 # delete all media entries inside collection
 @app.route("/collections/<int:id>/clear", methods=["GET", "POST"])
 def emptyCollection(id):
@@ -124,10 +138,12 @@ def emptyCollection(id):
     if request.method == "POST":
         return "Delete all media in collection: id={}".format(id)
 
+
 # show media detail page
 @app.route("/collections/<int:user_id>/media/<int:media_id>")
 def showMedia(user_id, media_id):
     return "Media item page: user_id={} - media_id={}".format(user_id, media_id)
+
 
 # edit media detail page
 @app.route("/collections/<int:user_id>/media/<int:media_id>/edit", methods=["GET", "POST"])
@@ -167,6 +183,7 @@ def editMedia(user_id, media_id):
             flash("*** Could not edit. One or more inputs empty ***")
             return showCollection(user_id)
 
+
 # add new media item
 @app.route("/collections/<int:user_id>/media/new", methods=["GET", "POST"])
 def newMedia(user_id):
@@ -200,7 +217,6 @@ def newMedia(user_id):
         else:
             flash("*** One or more fields not entered ***")
         return showCollection(user_id)
-        # return "POST: New media item page user_id: {}".format(user_id)
 
 
 # delete media item from collection
@@ -217,8 +233,6 @@ def deleteMedia(user_id, media_id):
         connectDB()
         query = session.query(Media).filter(Media.user_id==user_id, Media.id==media_id).scalar()
         session.close()
-
-        # return "Delete media entry confirmation page: user_id={} - media_id={}".format(user_id, media_id)
         return render_template("deletemedia.html", fullnames=fullnames, user=usermeta, media=query)
 
     if request.method == "POST":
@@ -230,6 +244,7 @@ def deleteMedia(user_id, media_id):
             flash("*** Media item successfully deleted ***")
         session.close()
         return showCollection(user_id)
+
 
 @app.route("/auth/login")
 def loginPage():

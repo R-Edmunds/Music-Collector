@@ -53,9 +53,9 @@
               <li class="nav-item">
 
                 {% if not user %}
-                <a class="nav-link" href="{{ url_for('showCollection', id=row[0]) }}">
+                <a class="nav-link" href="{{ url_for('showCollection', user_id=row[0]) }}">
                 {% else %}
-                <a class="nav-link{% if user["id"]==row[0] %} active{% endif %}" href="{{ url_for('showCollection', id=row[0]) }}">
+                <a class="nav-link{% if user["id"]==row[0] %} active{% endif %}" href="{{ url_for('showCollection', user_id=row[0]) }}">
                   {% endif %}
                   <span data-feather="layers"></span>
                   {{ row[1] }}
