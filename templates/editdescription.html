@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
+  <div class="">
+    <br>
+
+    {% block header %}
+    <h2>{% block title %}Edit Collection Description{% endblock %}</h2>
+    {% endblock %}
+
+    <h4>{{ user["fullname"] }}</h4>
+    <br>
+
+
+    <form method="POST">
+
+      <p><b>Current description:  </b>{{ user["description"] }}</p>
+
+      <div class="form-group row">
+        <div class="col-sm-10">
+          <label for="description">New Description: -</label>
+          <textarea class="form-control" name="description" rows="6"></textarea>
+        </div>
+      </div>
+
+      <div class="form-group row">
+        <div class="col-sm-10">
+          <button type="submit" class="btn btn-primary">Edit Description</button>
+          <a href="{{ url_for('showCollection', id=user["id"]) }}" class="btn btn-danger">Cancel</a>
+        </div>
+
+      </div>
+
+    </form>
+
+  </div>
+</main>
+
+{% endblock %}

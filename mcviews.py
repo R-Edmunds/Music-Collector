@@ -90,12 +90,31 @@ def showCollection(id):
     return render_template("collections.html", fullnames=fullnames, media=media, user=usermeta)
 
 # edit collection description
-@app.route("/collections/<int:id>/edit", methods=["GET", "POST"])
-def editCollection(id):
+@app.route("/collections/<int:user_id>/description/edit", methods=["GET", "POST"])
+def editCollection(user_id):
     if request.method == "GET":
-        return "Edit collection description page: id={}".format(id)
+        fullnames = getNames()
+        user = getUser(user_id)
+        usermeta = {
+            "id" :  user.id,
+            "fullname" :  user.first_name + " " + user.last_name,
+            "description" :  user.description
+        }
+        return render_template("editdescription.html", fullnames=fullnames, user=usermeta)
     if request.method == "POST":
-        return "POST:  Edit collection description page: id={}".format(id)
+        fullnames = getNames()
+        user = getUser(user_id)
+        form = request.form
+        if user and form["description"] != "":
+            user.description = form["description"]
+            session.add(user)
+            session.commit()
+            session.close()
+            flash("*** Description successfully edited ***")
+            return showCollection(user_id)
+        else:
+            flash("*** Error: description not edited ***")
+            return showCollection(user_id)
 
 # delete all media entries inside collection
 @app.route("/collections/<int:id>/clear", methods=["GET", "POST"])
