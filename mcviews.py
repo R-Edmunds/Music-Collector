@@ -129,20 +129,24 @@ def editMedia(user_id, media_id):
     if request.method == "POST":
         form = request.form
         # get media item object
-        connectDB()
-        query = session.query(Media).filter(Media.user_id==user_id, Media.id==media_id).scalar()
-        # check if form submission contains a change
-        if query.artist != form["artist"] or query.title != form["title"] or query.genre != form["genre"] or query.type != form["type"] or query.medium != form["format"]:
-            query.artist = form["artist"]
-            query.title = form["title"]
-            query.genre = form["genre"]
-            query.type = form["type"]
-            query.medium = form["format"]
-            session.add(query)
-            session.commit()
-        session.close()
-        flash("*** Media item successfully edited***")
-        return showCollection(user_id)
+        if len(form) > 4 and form["artist"] != "" and form["title"]:
+            connectDB()
+            query = session.query(Media).filter(Media.user_id==user_id, Media.id==media_id).scalar()
+            # check if form submission contains a change
+            if query.artist != form["artist"] or query.title != form["title"] or query.genre != form["genre"] or query.type != form["type"] or query.medium != form["format"]:
+                query.artist = form["artist"]
+                query.title = form["title"]
+                query.genre = form["genre"]
+                query.type = form["type"]
+                query.medium = form["format"]
+                session.add(query)
+                session.commit()
+            session.close()
+            flash("*** Media item successfully edited***")
+            return showCollection(user_id)
+        else:
+            flash("*** Could not edit. One or more inputs empty ***")
+            return showCollection(user_id)
 
 # add new media item
 @app.route("/collections/<int:user_id>/media/new", methods=["GET", "POST"])
@@ -159,19 +163,23 @@ def newMedia(user_id):
         return render_template("newmedia.html", fullnames=fullnames, user=usermeta, constants=constants)
     elif request.method == "POST":
         form = request.form
-        add = Media(
-            user_id = user_id,
-            artist = form["artist"],
-            title = form["title"],
-            genre = form["genre"],
-            type = form["type"],
-            medium = form["format"]
-        )
-        connectDB()
-        session.add(add)
-        session.commit()
-        session.close()
-        flash("*** New media item successfully added ***")
+        # check that all params entered
+        if len(form) > 4 and form["artist"] != "" and form["title"]:
+            add = Media(
+                user_id = user_id,
+                artist = form["artist"],
+                title = form["title"],
+                genre = form["genre"],
+                type = form["type"],
+                medium = form["format"]
+            )
+            connectDB()
+            session.add(add)
+            session.commit()
+            session.close()
+            flash("*** New media item successfully added ***")
+        else:
+            flash("*** One or more fields not entered ***")
         return showCollection(user_id)
         # return "POST: New media item page user_id: {}".format(user_id)
 
@@ -180,9 +188,29 @@ def newMedia(user_id):
 @app.route("/collections/<int:user_id>/media/<int:media_id>/delete", methods=["GET", "POST"])
 def deleteMedia(user_id, media_id):
     if request.method == "GET":
-        return "Delete media entry confirmation page: user_id={} - media_id={}".format(user_id, media_id)
+        fullnames = getNames()
+        user = getUser(user_id)
+        usermeta = {
+            "id" :  user.id,
+            "fullname" :  user.first_name + " " + user.last_name,
+            "description" :  user.description
+        }
+        connectDB()
+        query = session.query(Media).filter(Media.user_id==user_id, Media.id==media_id).scalar()
+        session.close()
+
+        # return "Delete media entry confirmation page: user_id={} - media_id={}".format(user_id, media_id)
+        return render_template("deletemedia.html", fullnames=fullnames, user=usermeta, media=query)
+
     if request.method == "POST":
-        return "Delete media entry: user_id={} - media_id={}".format(user_id, media_id)
+        connectDB()
+        query = session.query(Media).filter(Media.user_id==user_id, Media.id==media_id).scalar()
+        if query:
+            session.delete(query)
+            session.commit()
+            flash("*** Media item successfully deleted ***")
+        session.close()
+        return showCollection(user_id)
 
 @app.route("/auth/login")
 def loginPage():

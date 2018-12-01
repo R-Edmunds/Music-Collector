@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
+  <div class="">
+    <br>
+
+    {% block header %}
+    <h2>{% block title %}Delete Media Confirmation{% endblock %}</h2>
+    {% endblock %}
+
+    <!-- <h4>{{ user["fullname"] }}</h4> -->
+    <h5>Are you sure you want to delete, "{{ media.artist }} - {{ media.title }}"? This action can not be undone...</h5>
+    <br>
+
+
+    <form method="POST">
+
+      <br>
+
+      <div class="form-group row">
+        <div class="col-sm-10">
+          <button type="submit" class="btn btn-primary">Delete Media</button>
+          <a href="{{ url_for('showCollection', id=media.user_id) }}" class="btn btn-danger">Cancel</a>
+        </div>
+
+
+      </div>
+
+
+    </form>
+
+
+
+  </div>
+</main>
+
+{% endblock %}
