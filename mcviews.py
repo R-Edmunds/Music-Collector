@@ -9,6 +9,13 @@ app = Flask(__name__)
 
 session = ""
 
+constants = {
+    "formats" :  ("vinyl", "cd", "cassette", "other"),
+    "genres" :  ("blues", "classical", "country", "data", "folk", "jazz", "newage", "reggae", "rock", "soundtrack", "misc"),
+    "types" :  ("album", "ep", "lp", "mixtape", "single")
+}
+
+
 # connect to DB (call session.close at end of views)
 def connectDB():
     global session
@@ -114,21 +121,28 @@ def editMedia(user_id, media_id):
             "fullname" :  user.first_name + " " + user.last_name,
             "description" :  user.description
         }
-
         # get media detail
         connectDB()
         query = session.query(Media).filter(Media.user_id==user_id, Media.id==media_id).scalar()
         session.close()
-        formats = "vinyl", "cd", "cassette", "other"
-        genres = "blues", "classical", "country", "data", "folk", "jazz", "newage", "reggae", "rock", "soundtrack", "misc"
-        types = "album", "ep", "lp", "mixtape", "single"
-        # return "Edit media page: user_id={} - media_id={}".format(user_id, media_id)
-        return render_template("editmedia.html", fullnames=fullnames, user=usermeta, media=query, genres=genres, formats=formats, types=types)
+        return render_template("editmedia.html", fullnames=fullnames, user=usermeta, media=query, constants=constants)
     if request.method == "POST":
-        postform = request.form
-        for i in postform:
-            print(postform[i])
-        return "POST:  Edit media page: user_id={} - media_id={}".format(user_id, media_id)
+        form = request.form
+        # get media item object
+        connectDB()
+        query = session.query(Media).filter(Media.user_id==user_id, Media.id==media_id).scalar()
+        # check if form submission contains a change
+        if query.artist != form["artist"] or query.title != form["title"] or query.genre != form["genre"] or query.type != form["type"] or query.medium != form["format"]:
+            query.artist = form["artist"]
+            query.title = form["title"]
+            query.genre = form["genre"]
+            query.type = form["type"]
+            query.medium = form["format"]
+            session.add(query)
+            session.commit()
+        session.close()
+        flash("*** Media item successfully edited***")
+        return showCollection(user_id)
 
 # delete media item from collection
 @app.route("/collections/<int:user_id>/media/<int:media_id>/delete", methods=["GET", "POST"])
