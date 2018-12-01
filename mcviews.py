@@ -119,13 +119,15 @@ def editMedia(user_id, media_id):
         connectDB()
         query = session.query(Media).filter(Media.user_id==user_id, Media.id==media_id).scalar()
         session.close()
-        print(query)
         formats = "vinyl", "cd", "cassette", "other"
         genres = "blues", "classical", "country", "data", "folk", "jazz", "newage", "reggae", "rock", "soundtrack", "misc"
         types = "album", "ep", "lp", "mixtape", "single"
         # return "Edit media page: user_id={} - media_id={}".format(user_id, media_id)
         return render_template("editmedia.html", fullnames=fullnames, user=usermeta, media=query, genres=genres, formats=formats, types=types)
     if request.method == "POST":
+        postform = request.form
+        for i in postform:
+            print(postform[i])
         return "POST:  Edit media page: user_id={} - media_id={}".format(user_id, media_id)
 
 # delete media item from collection
