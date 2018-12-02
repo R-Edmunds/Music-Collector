@@ -4,6 +4,8 @@ from sqlalchemy import create_engine, func
 from sqlalchemy.orm import sessionmaker
 from mcmodel import Base, User, Media
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
+import random
+import hashlib
 
 app = Flask(__name__)
 
@@ -246,13 +248,37 @@ def deleteMedia(user_id, media_id):
         return showCollection(user_id)
 
 
-@app.route("/auth/login")
+@app.route("/auth/login", methods=["GET", "POST"])
 def loginPage():
-    return "login page"
+    if request.method == "GET":
+        fullnames = getNames()
+        return render_template("login.html", fullnames=fullnames)
+    elif request.method == "POST":
+        form = request.form
+        if form["email"] is not "" and form["password"] is not "":
+            print(form["email"])
+            print(form["password"])
+            # get user obj with email
+            connectDB()
+            query = session.query(User).filter(User.email==form["email"]).scalar()
+            session.close()
+            if query:
+                # get salt, hash inputed password, check against db
+                salted = form["password"] + query.password_salt
+                hashed = hashlib.sha256(str.encode(salted)).hexdigest()
+                if hashed == query.password_hash:
+                    print("LOGIN SUCCESSFULL")
+                else:
+                    print("ACCESS DENIED")
+            return "POST: login page, {}  {}  {}".format(form["email"], form["password"], len(form))
+        else:
+            return "missing user or passowrd"
+
 
 @app.route("/auth/registration")
 def registrationPage():
     return "registration page"
+
 
 @app.route("/auth/logout")
 def logoutPage():
