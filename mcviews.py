@@ -6,6 +6,7 @@ from mcmodel import Base, User, Media
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 import random
 import hashlib
+from flask import session as login_session
 
 app = Flask(__name__)
 
@@ -59,6 +60,18 @@ def getUsermeta(user_id):
     return usermeta
 
 
+# get full name of logged in user
+def getAuthdUser():
+    if login_session["username"]:
+        connectDB()
+        query = session.query(User.id).filter(User.email==login_session["username"]).scalar()
+        session.close()
+        usermeta = getUsermeta(query)
+        return usermeta
+    else:
+        return None
+
+
 # home page, shows list of collections and latest entries
 @app.route("/")
 def landingPage():
@@ -76,6 +89,7 @@ def landingPage():
             "count" : row[3]
         }
         topfive.append(x)
+    # loggedin = getAuthdUser()
     return render_template("home.html", fullnames=fullnames, topfive=topfive)
 
 
@@ -101,6 +115,7 @@ def showCollection(user_id):
             "user_id" :  row.user_id
         }
         media.append(x)
+        # loggedin = getAuthdUser()
     return render_template("collections.html", fullnames=fullnames, user=usermeta, media=media)
 
 
@@ -252,6 +267,12 @@ def deleteMedia(user_id, media_id):
 def loginPage():
     if request.method == "GET":
         fullnames = getNames()
+
+        # # Create anti-forgery state token
+        # state = ''.join(random.choice(string.ascii_uppercase + string.digits)
+        #                 for x in xrange(32))
+        # login_session['state'] = state
+        # loggedin = getAuthdUser()
         return render_template("login.html", fullnames=fullnames)
     elif request.method == "POST":
         form = request.form
@@ -267,7 +288,9 @@ def loginPage():
                 salted = form["password"] + query.password_salt
                 hashed = hashlib.sha256(str.encode(salted)).hexdigest()
                 if hashed == query.password_hash:
+                    login_session["username"] = query.email
                     print("LOGIN SUCCESSFULL")
+                    print(login_session)
                 else:
                     print("ACCESS DENIED")
             return "POST: login page, {}  {}  {}".format(form["email"], form["password"], len(form))
@@ -282,6 +305,8 @@ def registrationPage():
 
 @app.route("/auth/logout")
 def logoutPage():
+    # remove the username from the session if it's there
+    login_session.pop('username', None)
     return "logout page"
 
 
