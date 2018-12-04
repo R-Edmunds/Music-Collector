@@ -354,6 +354,24 @@ def logoutPage():
     return landingPage()
 
 
+# return specific collection in json format
+@app.route("/api/collections/<int:user_id>")
+def jsonCollection(user_id):
+    connectDB()
+    query = session.query(Media).filter(Media.user_id == user_id).all()
+    session.close()
+    return jsonify(Collection=[i.serialize for i in query])
+
+
+# return specific media item from collection in json format
+@app.route("/api/collections/<int:user_id>/media/<int:media_id>")
+def jsonMedia(user_id, media_id):
+    connectDB()
+    query = session.query(Media).filter(Media.user_id == user_id, Media.id == media_id).scalar()
+    session.close()
+    return jsonify(Media=query.serialize)
+
+
 if __name__ == "__main__":
     app.secret_key = "super_secret_key"
     app.debug = True

@@ -33,6 +33,19 @@ class Media(Base):
     artist = Column(String(64))
     title = Column(String(128))
 
+    @property
+    def serialize(self):
+        # return object in serialisable format
+        return {
+            "id" :  self.id,
+            "user_id" :  self.user_id,
+            "type" :  self.type,
+            "genre" :  self.genre,
+            "medium" :  self.medium,
+            "artist" :  self.artist,
+            "title" :  self.title
+        }
+
 
 
 
