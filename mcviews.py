@@ -91,6 +91,9 @@ def checkWrite(user_id):
         return False
 
 
+# ------------------------------ ROUTES ------------------------------
+
+
 # home page, shows list of collections and latest entries
 @app.route("/")
 def landingPage():
@@ -108,7 +111,6 @@ def landingPage():
             "count" : row[3]
         }
         topfive.append(x)
-    # loggedin = getAuthdUser()
     return render_template("home.html", fullnames=fullnames, topfive=topfive)
 
 
@@ -134,7 +136,6 @@ def showCollection(user_id):
             "user_id" :  row.user_id
         }
         media.append(x)
-        # loggedin = getAuthdUser()
     return render_template("collections.html", fullnames=fullnames, user=usermeta, media=media)
 
 
@@ -267,7 +268,6 @@ def newMedia(user_id):
         return redirect(url_for("loginPage"))
 
 
-
 # delete media item from collection
 @app.route("/collections/<int:user_id>/media/<int:media_id>/delete", methods=["GET", "POST"])
 def deleteMedia(user_id, media_id):
@@ -299,7 +299,6 @@ def deleteMedia(user_id, media_id):
         return redirect(url_for("loginPage"))
 
 
-
 @app.route("/auth/login", methods=["GET", "POST"])
 def loginPage():
     if not login_session.get("logged_in"):
@@ -315,8 +314,6 @@ def loginPage():
         elif request.method == "POST":
             form = request.form
             if form["email"] is not "" and form["password"] is not "":
-                print(form["email"])
-                print(form["password"])
                 # get user obj with email
                 connectDB()
                 query = session.query(User).filter(User.email==form["email"]).scalar()
@@ -328,14 +325,9 @@ def loginPage():
                     if hashed == query.password_hash:
                         login_session["username"] = query.email
                         login_session["logged_in"] = True
-
-                        print("LOGIN SUCCESSFULL")
-                        print(login_session)
-                    else:
-                        print("ACCESS DENIED")
                 return showCollection(query.id)
             else:
-                flash("** Missing user or passowrd ***")
+                flash("** Missing user or password ***")
                 return loginPage()
     else:
         connectDB()
