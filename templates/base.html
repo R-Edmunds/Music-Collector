@@ -22,7 +22,25 @@
 
       </div>Music Collector</a>
       <!-- <input class="form-control form-control-dark w-100" type="text" placeholder="Search" aria-label="Search"> -->
-      {% block flash %}{% endblock %}
+
+
+      {% block flash %}
+
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          {% for message in messages %}
+
+      <div class="alert alert-success">
+        {{ message }}
+      </div>
+
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      {% endblock %}
+
+
       <ul class="navbar-nav px-3">
         <li class="nav-item text-nowrap">
 
