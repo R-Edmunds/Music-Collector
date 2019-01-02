@@ -8,8 +8,9 @@ import random
 import hashlib
 from flask import session as login_session
 
+import httplib2
+# from oauth2client.contrib import gce
 from oauth2client.client import flow_from_clientsecrets
-from oauth2client.client import FlowExchangeError
 
 app = Flask(__name__)
 
@@ -25,6 +26,25 @@ constants = {
 # GCLIENT_ID = json.loads(
 #     open('client_secrets.json', 'r').read())['web']['client_id']
 # APPLICATION_NAME = "Restaurant Menu Application"
+
+
+# GOOGLE API CODE
+# Authorize server-to-server interactions from Google Compute Engine.
+def googleAuth():
+    flow = flow_from_clientsecrets('client_secrets.json')
+
+    auth_uri = flow.step1_get_authorize_url()
+    # Redirect the user to auth_uri on your platform.
+    # http://example.com/auth_return/?code=kACAH-1N
+
+    credentials = flow.step2_exchange(code)  # above code passed to this method
+
+
+    # Create anti-forgery state token
+    state = ''.join(random.choice(string.ascii_uppercase + string.digits)
+                    for x in xrange(32))
+    login_session['state'] = state
+
 
 
 # connect to DB (call session.close at end of views)
@@ -304,12 +324,6 @@ def loginPage():
     if not login_session.get("logged_in"):
         if request.method == "GET":
             fullnames = getNames()
-
-            # # Create anti-forgery state token
-            # state = ''.join(random.choice(string.ascii_uppercase + string.digits)
-            #                 for x in xrange(32))
-            # login_session['state'] = state
-            # loggedin = getAuthdUser()
             return render_template("login.html", fullnames=fullnames)
         elif request.method == "POST":
             form = request.form
@@ -370,6 +384,65 @@ def jsonMedia(user_id, media_id):
     query = session.query(Media).filter(Media.user_id == user_id, Media.id == media_id).scalar()
     session.close()
     return jsonify(Media=query.serialize)
+
+
+# process google oauth2 response
+# https://developers.google.com/identity/sign-in/web/server-side-flow
+@app.route("/oauth2/google", methods=["GET", "POST"])
+def oauthGoogle():
+    if request.method == "POST":
+        state = login_session["state"]
+        # flow = flow_from_clientsecrets('client_secrets.json',
+        #                                scope='https://www.googleapis.com/auth/userinfo.profile',
+        #                                redirect_uri='http://localhost:8000/oauth2/google')
+        #
+        # auth_uri = flow.step1_get_authorize_url()
+        # # Redirect the user to auth_uri on your platform.
+        # # http://example.com/auth_return/?code=kACAH-1N
+        #
+        # credentials = flow.step2_exchange(code)  # above code passed to this method
+        #
+        #
+        # # # Create anti-forgery state token
+        # # state = ''.join(random.choice(string.ascii_uppercase + string.digits)
+        # #                 for x in xrange(32))
+        # # login_session['state'] = state
+        #
+        #
+        # print(request.form.get("code"))
+        # return "get google auth code"
+
+        # ----------------------------
+
+        # (Receive auth_code by HTTPS POST)
+
+
+        # If this request does not have `X-Requested-With` header, this could be a CSRF
+        if not request.headers.get('X-Requested-With'):
+            abort(403)
+
+        # Set path to the Web application client_secret_*.json file you downloaded from the
+        # Google API Console: https://console.developers.google.com/apis/credentials
+        CLIENT_SECRET_FILE = 'client_secret.json'
+
+        # Exchange auth code for access token, refresh token, and ID token
+        credentials = client.credentials_from_clientsecrets_and_code(
+            CLIENT_SECRET_FILE,
+            ['https://www.googleapis.com/auth/userinfo.profile', 'openid', 'email'],
+            auth_code)
+
+        # Call Google API
+        http_auth = credentials.authorize(httplib2.Http())
+        drive_service = discovery.build('drive', 'v3', http=http_auth)
+        appfolder = drive_service.files().get(fileId='appfolder').execute()
+
+        # Get profile info from ID token
+        userid = credentials.id_token['sub']
+        email = credentials.id_token['email']
+
+        print(" state:  {}".format(state))
+        print(" code:  {}".format(code))
+        print(" email:  {}".format())
 
 
 if __name__ == "__main__":
