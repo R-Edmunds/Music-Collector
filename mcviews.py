@@ -23,30 +23,6 @@ constants = {
     "types" :  ("album", "ep", "lp", "mixtape", "single")
 }
 
-# # pull google oauth creds from .json file
-# GCLIENT_ID = json.loads(
-#     open('client_secrets.json', 'r').read())['web']['client_id']
-# APPLICATION_NAME = "Restaurant Menu Application"
-
-
-# GOOGLE API CODE
-# Authorize server-to-server interactions from Google Compute Engine.
-def googleAuth():
-    flow = flow_from_clientsecrets('client_secrets.json')
-
-    auth_uri = flow.step1_get_authorize_url()
-    # Redirect the user to auth_uri on your platform.
-    # http://example.com/auth_return/?code=kACAH-1N
-
-    credentials = flow.step2_exchange(code)  # above code passed to this method
-
-
-    # Create anti-forgery state token
-    state = ''.join(random.choice(string.ascii_uppercase + string.digits)
-                    for x in xrange(32))
-    login_session['state'] = state
-
-
 
 # connect to DB (call session.close at end of views)
 def connectDB():
@@ -362,6 +338,38 @@ def registerPage():
     if request.method == "GET":
         fullnames = getNames()
         return render_template("register.html", fullnames=fullnames)
+    elif request.method == "POST":
+        form = request.form
+        if form["firstname"] is not "" or form["lastname"] is not "" or form["email"] is not "" or form["password"] is not "" or form["description"] is not "":
+
+            # generate 16 char password salt
+            chars = string.ascii_letters + string.digits
+            salt = "".join(random.choice(chars) for i in range(16))
+            # add salt to end of password
+            salted = form["password"] + salt
+            hashed = hashlib.sha256(str.encode(salted)).hexdigest()
+            print(hashed)
+
+            newuser = User(
+                auth_type = "mc",
+                first_name = form["firstname"],
+                last_name = form["lastname"],
+                email = form["email"],
+                password_hash = hashed,
+                password_salt = salt,
+                description = form["description"]
+            )
+            connectDB()
+            session.add(newuser)
+            session.commit()
+            session.close()
+            return "posty wosty"
+        else:
+            flash("** Missing form data ***")
+            return landingPage()
+
+
+
 
 
 @app.route("/auth/logout")
