@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
+  <div class="">
+    <br>
+
+    {% block header %}
+    <h2>{% block title %}Edit Media in {{ user["fullname"] }}{% endblock %}</h2>
+    {% endblock %}
+
+    <!-- <h4>{{ user["fullname"] }}</h4> -->
+    <h5>Edit "{{ media.artist }} - {{ media.title }}"</h5>
+    <br>
+
+
+    <form method="POST">
+      <div class="form-group row">
+        <label class="col-sm-2 col-form-label">Artist</label>
+        <div class="col-sm-10">
+          <input type="text" class="form-control" name="artist" value="{{ media.artist }}">
+        </div>
+      </div>
+      <div class="form-group row">
+        <label class="col-sm-2 col-form-label">Title</label>
+        <div class="col-sm-10">
+          <input type="text" class="form-control" name="title" value="{{ media.title }}">
+        </div>
+      </div>
+
+
+      <div class="form-group row">
+        <label class="col-sm-2 col-form-label">Genre</label>
+        <div class="col-sm-10">
+            <select class="form-control" name="genre">
+
+              {% for i in constants["genres"] %}
+              <option{% if i==media.genre %} selected{% endif %}>{{ i }}</option>
+              {% endfor %}
+
+            </select>
+        </div>
+      </div>
+
+
+
+
+      <fieldset class="form-group">
+        <div class="row">
+          <legend class="col-form-label col-sm-2 pt-0">Type</legend>
+          <div class="col-sm-10">
+
+
+            {% for i in constants["types"] %}
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="type" value="{{ i }}"{% if i==media.type %} checked{% endif %}>
+              <label class="form-check-label" for="gridRadios1">
+                {{ i }}
+              </label>
+            </div>
+            {% endfor %}
+
+
+          </div>
+        </div>
+      </fieldset>
+
+
+      <fieldset class="form-group">
+        <div class="row">
+          <legend class="col-form-label col-sm-2 pt-0">Format</legend>
+          <div class="col-sm-10">
+
+            {% for i in constants["formats"] %}
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="format" value="{{ i }}"{% if i==media.medium %} checked{% endif %}>
+              <label class="form-check-label" for="gridRadios2">
+                {{ i }}
+              </label>
+            </div>
+            {% endfor %}
+
+
+          </div>
+        </div>
+      </fieldset>
+
+      <br>
+
+      <div class="form-group row">
+        <div class="col-sm-10">
+          <button type="submit" class="btn btn-primary">Edit Media</button>
+          <a href="{{ url_for('showCollection', user_id=media.user_id) }}" class="btn btn-danger">Cancel</a>
+        </div>
+
+
+      </div>
+
+
+    </form>
+
+
+
+
+
+
+
+
+
+  </div>
+</main>
+
+{% endblock %}

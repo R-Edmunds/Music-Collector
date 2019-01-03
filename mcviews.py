@@ -5,12 +5,13 @@ from sqlalchemy.orm import sessionmaker
 from mcmodel import Base, User, Media
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 import random
+import string
 import hashlib
 from flask import session as login_session
 
 import httplib2
-# from oauth2client.contrib import gce
-from oauth2client.client import flow_from_clientsecrets
+from google.oauth2 import id_token
+from google.auth.transport import requests
 
 app = Flask(__name__)
 
@@ -324,7 +325,13 @@ def loginPage():
     if not login_session.get("logged_in"):
         if request.method == "GET":
             fullnames = getNames()
-            return render_template("login.html", fullnames=fullnames)
+
+            # Create anti-forgery state token
+            state = ''.join(random.choice(string.ascii_uppercase + string.digits)
+                            for x in range(32))
+            login_session['state'] = state
+
+            return render_template("login.html", fullnames=fullnames, state=state)
         elif request.method == "POST":
             form = request.form
             if form["email"] is not "" and form["password"] is not "":
@@ -388,61 +395,42 @@ def jsonMedia(user_id, media_id):
 
 # process google oauth2 response
 # https://developers.google.com/identity/sign-in/web/server-side-flow
-@app.route("/oauth2/google", methods=["GET", "POST"])
+@app.route("/oauth2/google", methods=["POST"])
 def oauthGoogle():
     if request.method == "POST":
         state = login_session["state"]
-        # flow = flow_from_clientsecrets('client_secrets.json',
-        #                                scope='https://www.googleapis.com/auth/userinfo.profile',
-        #                                redirect_uri='http://localhost:8000/oauth2/google')
-        #
-        # auth_uri = flow.step1_get_authorize_url()
-        # # Redirect the user to auth_uri on your platform.
-        # # http://example.com/auth_return/?code=kACAH-1N
-        #
-        # credentials = flow.step2_exchange(code)  # above code passed to this method
-        #
-        #
-        # # # Create anti-forgery state token
-        # # state = ''.join(random.choice(string.ascii_uppercase + string.digits)
-        # #                 for x in xrange(32))
-        # # login_session['state'] = state
-        #
-        #
-        # print(request.form.get("code"))
-        # return "get google auth code"
 
-        # ----------------------------
+        # (Receive token by HTTPS POST)
+        # google code https://developers.google.com/identity/sign-in/web/backend-auth
 
-        # (Receive auth_code by HTTPS POST)
+        try:
+            # Specify the CLIENT_ID of the app that accesses the backend:
+            CLIENT_ID = "738961851559-op16iihovld1kir48n3mrqc6640i49ll.apps.googleusercontent.com"
+            token = request.form['idtoken']
+            idinfo = id_token.verify_oauth2_token(token, requests.Request(), CLIENT_ID)
 
+            # Or, if multiple clients access the backend server:
+            # idinfo = id_token.verify_oauth2_token(token, requests.Request())
+            # if idinfo['aud'] not in [CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3]:
+            #     raise ValueError('Could not verify audience.')
 
-        # If this request does not have `X-Requested-With` header, this could be a CSRF
-        if not request.headers.get('X-Requested-With'):
-            abort(403)
+            if idinfo['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
+                raise ValueError('Wrong issuer.')
 
-        # Set path to the Web application client_secret_*.json file you downloaded from the
-        # Google API Console: https://console.developers.google.com/apis/credentials
-        CLIENT_SECRET_FILE = 'client_secret.json'
+            # If auth request is from a G Suite domain:
+            # if idinfo['hd'] != GSUITE_DOMAIN_NAME:
+            #     raise ValueError('Wrong hosted domain.')
 
-        # Exchange auth code for access token, refresh token, and ID token
-        credentials = client.credentials_from_clientsecrets_and_code(
-            CLIENT_SECRET_FILE,
-            ['https://www.googleapis.com/auth/userinfo.profile', 'openid', 'email'],
-            auth_code)
+            # ID token is valid. Get the user's Google Account ID from the decoded token.
+            userid = idinfo['sub']
 
-        # Call Google API
-        http_auth = credentials.authorize(httplib2.Http())
-        drive_service = discovery.build('drive', 'v3', http=http_auth)
-        appfolder = drive_service.files().get(fileId='appfolder').execute()
+            print(idinfo)
+            return "AUTH SUCCESS:  " + userid
+        except ValueError:
+            return "Invalid token"
 
-        # Get profile info from ID token
-        userid = credentials.id_token['sub']
-        email = credentials.id_token['email']
-
-        print(" state:  {}".format(state))
-        print(" code:  {}".format(code))
-        print(" email:  {}".format())
+        # use token to acquire json object from google api
+        # googleUser
 
 
 if __name__ == "__main__":
