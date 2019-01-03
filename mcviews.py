@@ -54,6 +54,14 @@ def getUser(user_id):
     return query
 
 
+# check if user already exists by search for email/username
+def userExists(email):
+    connectDB()
+    query = session.query(User).filter(User.email == email).scalar()
+    session.close()
+    return query
+
+
 # get user meta data
 def getUsermeta(user_id):
     user = getUser(user_id)
@@ -340,32 +348,35 @@ def registerPage():
         return render_template("register.html", fullnames=fullnames)
     elif request.method == "POST":
         form = request.form
-        if form["firstname"] is not "" or form["lastname"] is not "" or form["email"] is not "" or form["password"] is not "" or form["description"] is not "":
+        if not userExists(form["email"]):
+            if form["firstname"] is not "" or form["lastname"] is not "" or form["email"] is not "" or form["password"] is not "" or form["description"] is not "":
+                # generate 16 char password salt
+                chars = string.ascii_letters + string.digits
+                salt = "".join(random.choice(chars) for i in range(16))
+                # add salt to end of password
+                salted = form["password"] + salt
+                hashed = hashlib.sha256(str.encode(salted)).hexdigest()
+                print(hashed)
 
-            # generate 16 char password salt
-            chars = string.ascii_letters + string.digits
-            salt = "".join(random.choice(chars) for i in range(16))
-            # add salt to end of password
-            salted = form["password"] + salt
-            hashed = hashlib.sha256(str.encode(salted)).hexdigest()
-            print(hashed)
-
-            newuser = User(
-                auth_type = "mc",
-                first_name = form["firstname"],
-                last_name = form["lastname"],
-                email = form["email"],
-                password_hash = hashed,
-                password_salt = salt,
-                description = form["description"]
-            )
-            connectDB()
-            session.add(newuser)
-            session.commit()
-            session.close()
-            return "posty wosty"
+                newuser = User(
+                    auth_type = "mc",
+                    first_name = form["firstname"],
+                    last_name = form["lastname"],
+                    email = form["email"],
+                    password_hash = hashed,
+                    password_salt = salt,
+                    description = form["description"]
+                )
+                connectDB()
+                session.add(newuser)
+                session.commit()
+                session.close()
+                return "posty wosty"
+            else:
+                flash("** Missing form data ***")
+                return landingPage()
         else:
-            flash("** Missing form data ***")
+            flash("** Email address already registered ***")
             return landingPage()
 
 
@@ -435,12 +446,31 @@ def oauthGoogle():
             userid = idinfo['sub']
 
             print(idinfo)
-            return "AUTH SUCCESS:  " + userid
+
+            # create native account, sub goes in  auth_token
+            if not userExists(idinfo["email"]):
+                newuser = User(
+                    auth_type = "gl",
+                    first_name = idinfo["given_name"],
+                    last_name = idinfo["family_name"],
+                    email = idinfo["email"],
+                    picture = idinfo["picture"],
+                    auth_token = idinfo["sub"]
+                )
+                connectDB()
+                session.add(newuser)
+                session.commit()
+                session.close()
+
+            login_session["username"] = idinfo["email"]
+            login_session["logged_in"] = True
+            connectDB()
+            query = session.query(User.id).filter(User.email==idinfo["email"]).scalar()
+            session.close()
+            return showCollection(query)
+            # return "AUTH SUCCESS:  " + userid
         except ValueError:
             return "Invalid token"
-
-        # use token to acquire json object from google api
-        # googleUser
 
 
 if __name__ == "__main__":
