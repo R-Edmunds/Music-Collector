@@ -357,9 +357,11 @@ def loginPage():
         return showCollection(query)
 
 
-@app.route("/auth/registration")
-def registrationPage():
-    return "registration page"
+@app.route("/register", methods=["GET", "POST"])
+def registerPage():
+    if request.method == "GET":
+        fullnames = getNames()
+        return render_template("register.html", fullnames=fullnames)
 
 
 @app.route("/auth/logout")
