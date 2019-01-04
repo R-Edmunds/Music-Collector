@@ -390,6 +390,7 @@ def logoutPage():
         u = login_session["username"]
         login_session.pop("username", None)
         login_session.pop("logged_in", None)
+        login_session.pop("auth_type", None)
         flash("*** Logged out as {} ***".format(u))
     else:
         flash("*** Error: no login session ***")
@@ -464,6 +465,7 @@ def oauthGoogle():
 
             login_session["username"] = idinfo["email"]
             login_session["logged_in"] = True
+            login_session["auth_type"] = "gl"
             connectDB()
             query = session.query(User.id).filter(User.email==idinfo["email"]).scalar()
             session.close()
@@ -471,6 +473,14 @@ def oauthGoogle():
             # return "AUTH SUCCESS:  " + userid
         except ValueError:
             return "Invalid token"
+
+
+# process google oauth2 response
+# https://developers.google.com/identity/sign-in/web/server-side-flow
+@app.route("/oauth2/facebook", methods=["POST"])
+def oauthFacebook():
+    if request.method == "POST":
+        state = login_session["state"]
 
 
 if __name__ == "__main__":

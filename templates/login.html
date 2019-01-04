@@ -1,16 +1,6 @@
 {% extends 'base.html' %}
 
-{% block head %}
-<meta name="google-signin-client_id" content="738961851559-op16iihovld1kir48n3mrqc6640i49ll.apps.googleusercontent.com">
-
-<!-- BEGIN Pre-requisites -->
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
-<script src="https://apis.google.com/js/platform.js" async defer></script>
-
-<!-- END Pre-requisites -->
-
-<!-- Continuing the <head> section -->
-{% endblock %}
+{% block head %}{% endblock %}
 
 
 {% block content %}
@@ -77,9 +67,10 @@
 <script>
   function signOut() {
     var auth2 = gapi.auth2.getAuthInstance();
-    auth2.signOut().then(function () {
-      console.log('User signed out.');
-    });
+    auth2.signOut();
+    // auth2.signOut().then(function () {
+    //   console.log('User signed out.');
+    // });
   }
 </script>
 <!-- google signout link end -->
