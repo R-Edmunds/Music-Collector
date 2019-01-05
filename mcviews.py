@@ -76,24 +76,24 @@ def getUsermeta(user_id):
     return usermeta
 
 
-# get full name of logged in user
-def getAuthdUser():
-    if login_session.get("logged_in"):
-        connectDB()
-        query = session.query(User.id).filter(User.email==login_session["username"]).scalar()
-        session.close()
-        usermeta = getUsermeta(query)
-        print("is this always truee???")
-        return usermeta
-    else:
-        return None
+# # get full name of logged in user
+# def getAuthdUser():
+#     if login_session.get("logged_in"):
+#         connectDB()
+#         query = session.query(User.id).filter(User.email==login_session["username"]).scalar()
+#         session.close()
+#         usermeta = getUsermeta(query)
+#         print("is this always truee???")
+#         return usermeta
+#     else:
+#         return None
 
 
-# check for write access
+# check for record write access
 def checkWrite(user_id):
     user = getUser(user_id)
     if login_session.get("logged_in"):
-        if login_session["username"] == user.email:
+        if login_session["username"] == user.email and login_session["auth_type"] == user.auth_type:
             return True
     else:
         return False
@@ -339,7 +339,7 @@ def loginPage():
                 return loginPage()
     else:
         connectDB()
-        query = session.query(User.id).filter(User.email==login_session["username"]).scalar()
+        query = session.query(User.id).filter(User.email==login_session["username"], User.auth_type==login_session["auth_type"]).scalar()
         session.close()
         return showCollection(query)
 
