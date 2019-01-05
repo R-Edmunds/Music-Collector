@@ -12,6 +12,7 @@ from flask import session as login_session
 import httplib2
 from google.oauth2 import id_token
 from google.auth.transport import requests
+import json
 
 app = Flask(__name__)
 
@@ -55,9 +56,11 @@ def getUser(user_id):
 
 
 # check if user already exists by search for email/username
-def userExists(email):
+def userExists(email, auth_type="mc"):
     connectDB()
-    query = session.query(User).filter(User.email == email).scalar()
+    # print(email + " " + auth_type)
+    query = session.query(User).filter(User.email==email, User.auth_type==auth_type).scalar()
+    # print("#####################  " + str(query.auth_type))
     session.close()
     return query
 
@@ -449,7 +452,7 @@ def oauthGoogle():
             print(idinfo)
 
             # create native account, sub goes in  auth_token
-            if not userExists(idinfo["email"]):
+            if not userExists(idinfo["email"], "gl"):
                 newuser = User(
                     auth_type = "gl",
                     first_name = idinfo["given_name"],
@@ -480,10 +483,42 @@ def oauthGoogle():
 @app.route("/oauth2/facebook", methods=["POST"])
 def oauthFacebook():
     if request.method == "POST":
-        state = login_session["state"]
+        # state = login_session["state"]
+        fbinfo = json.loads(request.form['fbinfo'])
+        # print(fbinfo)
+        # fbinfo = request.form['fbinfo']
+        print(fbinfo['first_name'])
+        print(fbinfo['last_name'])
+        print(fbinfo['email'])
+        print(json.loads(fbinfo['accessToken']))
+        # return "facebook oauth crap:  {}".format(fbinfo)
+
+
+        # create native account, sub goes in  auth_token
+        if not userExists(fbinfo["email"], "fb"):
+            newuser = User(
+                auth_type = "fb",
+                first_name = fbinfo["first_name"],
+                last_name = fbinfo["last_name"],
+                email = fbinfo["email"],
+                auth_token = json.loads(fbinfo["accessToken"])["accessToken"]
+            )
+            connectDB()
+            session.add(newuser)
+            session.commit()
+            session.close()
+
+        login_session["username"] = fbinfo["email"]
+        login_session["logged_in"] = True
+        login_session["auth_type"] = "fb"
+        connectDB()
+        query = session.query(User.id).filter(User.email==fbinfo["email"], User.auth_type=="fb").scalar()
+        session.close()
+        return showCollection(query)
 
 
 if __name__ == "__main__":
     app.secret_key = "super_secret_key"
     app.debug = True
-    app.run(host="0.0.0.0", port=8000)
+    # app.run(host="0.0.0.0", port=8000)
+    app.run(host='0.0.0.0', port=8000, ssl_context=('cert.pem', 'key.pem'))

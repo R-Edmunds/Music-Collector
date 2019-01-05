@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="">
     <meta name="author" content="">
+    <!-- fix facebook https interfering with google -->
+    <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://ajax.googleapis.com https://apis.google.com https://accounts.google.com 'unsafe-inline' 'unsafe-eval'"> -->
     <meta name="google-signin-client_id" content="738961851559-op16iihovld1kir48n3mrqc6640i49ll.apps.googleusercontent.com">
     <!-- <link rel="icon" href="favicon.ico"> -->
 
@@ -19,6 +21,106 @@
   </head>
 
   <body>
+    <script>
+      // https://developers.facebook.com/docs/javascript/quickstart
+      window.fbAsyncInit = function() {
+        FB.init({
+          appId            : '524896611341289',
+          autoLogAppEvents : true,
+          xfbml            : true,
+          version          : 'v3.2'
+        });
+      };
+
+      (function(d, s, id){
+         var js, fjs = d.getElementsByTagName(s)[0];
+         if (d.getElementById(id)) {return;}
+         js = d.createElement(s); js.id = id;
+         js.src = "https://connect.facebook.net/en_GB/sdk.js";
+         fjs.parentNode.insertBefore(js, fjs);
+       }(document, 'script', 'facebook-jssdk'));
+
+       // The first step when loading your webpage is figuring out if a person
+       // is already logged into your app with Facebook Login. You start that
+       // process with a call to FB.getLoginStatus. That function will trigger
+       // a call to Facebook to get the login status and call your callback
+       // function with the results.
+       FB.getLoginStatus(function(response) {
+         if (response.status === 'connected') {
+           console.log(response.authResponse.accessToken);
+         }
+         statusChangeCallback(response);
+       });
+
+       // This is the callback. It calls FB.getLoginStatus() to get the most
+       // recent login state. (The statusChangeCallback() function is part of
+       // the example that processes the response.)
+       function checkLoginState() {
+         FB.getLoginStatus(function(response) {
+           statusChangeCallback(response);
+         });
+       }
+
+       // Here we run a very simple test of the Graph API after login is
+       // successful.  See statusChangeCallback() for when this call is made.
+       function testAPI(accessToken) {
+         console.log('Welcome!  Fetching your information.... ');
+         FB.api('/me', {fields: ['name', 'first_name', 'last_name', 'email']}, function(response) {
+           console.log('Successful login for: ' + response.name);
+           console.log('last_name: ' + response.last_name);
+           console.log('first_name: ' + response.first_name);
+           console.log('email: ' + response.email);
+           console.log('accessToken: ' + accessToken);
+
+           var array = {
+            last_name: response.last_name,
+            first_name: response.first_name,
+            email: response.email,
+            accessToken: accessToken
+           }
+
+           var xhr = new XMLHttpRequest();
+           xhr.open('POST', '{{ url_for('oauthFacebook') }}');
+           xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+           // xhr.onload = function() {
+           //   console.log('Signed in as: ' + xhr.responseText);
+           // };
+           xhr.send('fbinfo=' + JSON.stringify(array));
+         });
+       }
+
+       // This is called with the results from from FB.getLoginStatus().
+       function statusChangeCallback(response) {
+         console.log('statusChangeCallback');
+         console.log(response);
+         // The response object is returned with a status field that lets the
+         // app know the current login status of the person.
+         // Full docs on the response object can be found in the documentation
+         // for FB.getLoginStatus().
+         if (response.status === 'connected') {
+           // Logged into your app and Facebook.
+           testAPI(JSON.stringify(response.authResponse));
+         } else {
+           // The person is not logged into your app or we are unable to tell.
+           document.getElementById('status').innerHTML = 'Please log ' +
+             'into this app.';
+         }
+       }
+    </script>
+
+    <!-- generated facebook login button code -->
+    <div id="fb-root"></div>
+    <script>(function(d, s, id) {
+        var js, fjs = d.getElementsByTagName(s)[0];
+        if (d.getElementById(id)) return;
+        js = d.createElement(s); js.id = id;
+        js.src = 'https://connect.facebook.net/en_GB/sdk.js#xfbml=1&version=v3.2&appId=524896611341289';
+        fjs.parentNode.insertBefore(js, fjs);
+      }(document, 'script', 'facebook-jssdk'));
+    </script>
+    <!-- generated facebook login button code -->
+
+
     <nav class="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
       <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="{{ url_for('landingPage') }}"><div class="glyphicon glyphicon-music">
 
