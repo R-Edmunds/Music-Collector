@@ -78,19 +78,6 @@ def getUsermeta(user_id):
     return usermeta
 
 
-# # get full name of logged in user
-# def getAuthdUser():
-#     if login_session.get("logged_in"):
-#         connectDB()
-#         query = session.query(User.id).filter(User.email==login_session["username"]).scalar()
-#         session.close()
-#         usermeta = getUsermeta(query)
-#         print("is this always truee???")
-#         return usermeta
-#     else:
-#         return None
-
-
 # check for record write access
 def checkWrite(user_id):
     user = getUser(user_id)
@@ -236,11 +223,13 @@ def editMedia(user_id, media_id):
                 query = session.query(Media).filter(
                     Media.user_id == user_id, Media.id == media_id).scalar()
                 # check if form submission contains a change
-                if (query.artist != form["artist"] or
+                if (
+                    query.artist != form["artist"] or
                     query.title != form["title"] or
                     query.genre != form["genre"] or
                     query.type != form["type"] or
-                    query.medium != form["format"]):
+                    query.medium != form["format"]
+                ):
                         query.artist = form["artist"]
                         query.title = form["title"]
                         query.genre = form["genre"]
@@ -363,6 +352,7 @@ def loginPage():
                     if hashed == query.password_hash:
                         login_session["username"] = query.email
                         login_session["logged_in"] = True
+                        login_session["auth_type"] = "mc"
                 return showCollection(query.id)
             else:
                 flash("** Missing user or password ***")
@@ -510,7 +500,7 @@ def oauthGoogle():
             login_session["auth_type"] = "gl"
             connectDB()
             query = session.query(User.id).filter(
-                User.email == idinfo["email"]).scalar()
+                User.email == idinfo["email"], User.auth_type == "gl").scalar()
             session.close()
             return showCollection(query)
             # return "AUTH SUCCESS:  " + userid
@@ -518,8 +508,8 @@ def oauthGoogle():
             return "Invalid token"
 
 
-# process google oauth2 response
-# https://developers.google.com/identity/sign-in/web/server-side-flow
+# process facebook oauth2 response
+# https://developers.facebook.com/docs/facebook-login/web
 @app.route("/oauth2/facebook", methods=["POST"])
 def oauthFacebook():
     if request.method == "POST":
