@@ -60,7 +60,6 @@ def getUser(user_id):
 # check if user already exists by search for email/username
 def userExists(email, auth_type="mc"):
     connectDB()
-    # print(email + " " + auth_type)
     query = session.query(User).filter(User.email == email,
                                        User.auth_type == auth_type).scalar()
     session.close()
@@ -93,6 +92,7 @@ def checkWrite(user_id):
 
 
 # home page, shows list of collections and latest entries
+# fullnames is used to populate nav column
 @app.route("/")
 def landingPage():
     fullnames = getNames()
@@ -366,6 +366,7 @@ def loginPage():
         return showCollection(query)
 
 
+# register native mc account
 @app.route("/register", methods=["GET", "POST"])
 def registerPage():
     if request.method == "GET":
@@ -387,8 +388,6 @@ def registerPage():
                 # add salt to end of password
                 salted = form["password"] + salt
                 hashed = hashlib.sha256(str.encode(salted)).hexdigest()
-                print(hashed)
-
                 newuser = User(
                     auth_type="mc",
                     first_name=form["firstname"],
@@ -401,8 +400,15 @@ def registerPage():
                 connectDB()
                 session.add(newuser)
                 session.commit()
+                query = session.query(User.id).filter(
+                    User.email == form["email"],
+                    User.auth_type == "mc").scalar()
                 session.close()
-                return "posty wosty"
+                # login on account creation
+                login_session["username"] = form["email"]
+                login_session["logged_in"] = True
+                login_session["auth_type"] = "mc"
+                return showCollection(query)
             else:
                 flash("** Missing form data ***")
                 return landingPage()
@@ -494,7 +500,6 @@ def oauthGoogle():
                 session.add(newuser)
                 session.commit()
                 session.close()
-
             login_session["username"] = idinfo["email"]
             login_session["logged_in"] = True
             login_session["auth_type"] = "gl"
@@ -503,7 +508,6 @@ def oauthGoogle():
                 User.email == idinfo["email"], User.auth_type == "gl").scalar()
             session.close()
             return showCollection(query)
-            # return "AUTH SUCCESS:  " + userid
         except ValueError:
             return "Invalid token"
 
@@ -513,17 +517,12 @@ def oauthGoogle():
 @app.route("/oauth2/facebook", methods=["POST"])
 def oauthFacebook():
     if request.method == "POST":
-        # state = login_session["state"]
         fbinfo = json.loads(request.form['fbinfo'])
-        # print(fbinfo)
-        # fbinfo = request.form['fbinfo']
         print(fbinfo['first_name'])
         print(fbinfo['last_name'])
         print(fbinfo['email'])
         print(json.loads(fbinfo['accessToken']))
-        # return "facebook oauth crap:  {}".format(fbinfo)
-
-        # create native account, sub goes in  auth_token
+        # create native account, sub goes in User.auth_token
         if not userExists(fbinfo["email"], "fb"):
             newuser = User(
                 auth_type="fb",
@@ -536,7 +535,6 @@ def oauthFacebook():
             session.add(newuser)
             session.commit()
             session.close()
-
         login_session["username"] = fbinfo["email"]
         login_session["logged_in"] = True
         login_session["auth_type"] = "fb"
