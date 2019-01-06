@@ -123,7 +123,7 @@ def landingPage():
 def showCollection(user_id):
     fullnames = getNames()
     usermeta = getUsermeta(user_id)
-    print(usermeta)
+    # print(usermeta)
 
     connectDB()
     query = session.query(Media).filter(Media.user_id == user_id).all()
@@ -487,7 +487,7 @@ def oauthGoogle():
             # decoded token.
             userid = idinfo['sub']
 
-            print(idinfo)
+            # print(idinfo)
 
             # create native account, sub goes in  auth_token
             if not userExists(idinfo["email"], "gl"):
@@ -521,10 +521,10 @@ def oauthGoogle():
 def oauthFacebook():
     if request.method == "POST":
         fbinfo = json.loads(request.form['fbinfo'])
-        print(fbinfo['first_name'])
-        print(fbinfo['last_name'])
-        print(fbinfo['email'])
-        print(json.loads(fbinfo['accessToken']))
+        # print(fbinfo['first_name'])
+        # print(fbinfo['last_name'])
+        # print(fbinfo['email'])
+        # print(json.loads(fbinfo['accessToken']))
         # create native account, sub goes in User.auth_token
         if not userExists(fbinfo["email"], "fb"):
             newuser = User(
@@ -550,6 +550,6 @@ def oauthFacebook():
 
 if __name__ == "__main__":
     app.secret_key = "super_secret_key"
-    app.debug = True
+    app.debug = False
     # app.run(host="0.0.0.0", port=8000)
     app.run(host='0.0.0.0', port=8000, ssl_context=('cert.pem', 'key.pem'))
