@@ -14,6 +14,7 @@ import httplib2
 from google.oauth2 import id_token
 from google.auth.transport import requests
 import json
+import psycopg2
 
 app = Flask(__name__)
 
@@ -30,7 +31,7 @@ constants = {
 # connect to DB (call session.close at end of views)
 def connectDB():
     global session
-    engine = create_engine("sqlite:///mcollector.sqlite3")
+    engine = create_engine("postgresql+psycopg2://mc:pFjUVM#Uql4KiL3O5q7J@127.0.0.1:5432/mc")
     Base.metadata.bind = engine
 
     DBSession = sessionmaker(bind=engine)

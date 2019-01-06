@@ -7,14 +7,14 @@ from mcmodel import Base, User, Media
 import hashlib
 import string
 import random
-
+import psycopg2
 
 session = ""
 
 # connect to DB (call session.close at end of views)
 def connectDB():
     global session
-    engine = create_engine("sqlite:///mcollector.sqlite3")
+    engine = create_engine("postgresql+psycopg2://mc:pFjUVM#Uql4KiL3O5q7J@127.0.0.1:5432/mc")
     Base.metadata.bind = engine
 
     DBSession = sessionmaker(bind=engine)

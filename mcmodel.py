@@ -4,6 +4,7 @@ from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy import create_engine
+import psycopg2
 
 Base = declarative_base()
 
@@ -46,5 +47,9 @@ class Media(Base):
         }
 
 
-engine = create_engine("sqlite:///mcollector.sqlite3")
+# engine = create_engine("sqlite:///mcollector.sqlite3")
+# Base.metadata.create_all(engine)
+
+engine = create_engine("postgresql+psycopg2://mc:pFjUVM#Uql4KiL3O5q7J@127.0.0.1:5432/mc")
+# engine = create_engine("postgresql+psycopg2://mc:pFjUVM#Uql4KiL3O5q7J@127.0.0.1:5432/mc[?key=value&key=value...]")
 Base.metadata.create_all(engine)
