@@ -458,11 +458,13 @@ def oauthGoogle():
         state = login_session["state"]
 
         # (Receive token by HTTPS POST)
-        # google code https://developers.google.com/identity/sign-in/web/backend-auth
+        # google code: -
+        # https://developers.google.com/identity/sign-in/web/backend-auth
 
         try:
             # Specify the CLIENT_ID of the app that accesses the backend:
-            CLIENT_ID = "738961851559-op16iihovld1kir48n3mrqc6640i49ll.apps.googleusercontent.com"
+            CLIENT_ID = "738961851559-op16iihovld1kir48n3mrqc6640i49ll" + \
+                ".apps.googleusercontent.com"
             token = request.form['idtoken']
             idinfo = id_token.verify_oauth2_token(
                 token, requests.Request(), CLIENT_ID)
