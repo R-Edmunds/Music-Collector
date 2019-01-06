@@ -18,6 +18,10 @@ import psycopg2
 
 app = Flask(__name__)
 
+app.secret_key = "".join(random.choice(
+    string.ascii_uppercase + string.digits) for x in range(128))
+
+
 session = ""
 
 constants = {
