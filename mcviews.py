@@ -18,9 +18,7 @@ import psycopg2
 
 app = Flask(__name__)
 
-app.secret_key = "".join(random.choice(
-    string.ascii_uppercase + string.digits) for x in range(128))
-
+app.secret_key = "ot8UxCqlSw1m1hbmowODGaD1tZerCC3TkGPbvtCI3dijsU8UWE6K1opZEzLXfQa4"
 
 session = ""
 
