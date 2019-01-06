@@ -17,10 +17,10 @@ class User(Base):
     last_name = Column(String(32))
     email = Column(String(64))
     password_hash = Column(String(64))
-    password_salt = Column(String(16))
-    picture = Column(String(64))
-    auth_token = Column(String(384))
-    description = Column(String(512))
+    password_salt = Column(String(32))
+    picture = Column(String(256))
+    auth_token = Column(String(512))
+    description = Column(String(1024))
 
 
 class Media(Base):
