@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 
-# import os
-# import sys
 from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy import create_engine
 
 Base = declarative_base()
+
 
 class User(Base):
     __tablename__ = "user"
@@ -20,7 +19,7 @@ class User(Base):
     password_salt = Column(String(16))
     picture = Column(String(64))
     auth_token = Column(String(384))
-    description = Column(String(256))
+    description = Column(String(512))
 
 
 class Media(Base):
@@ -37,13 +36,13 @@ class Media(Base):
     def serialize(self):
         # return object in serialisable format
         return {
-            "id" :  self.id,
-            "user_id" :  self.user_id,
-            "type" :  self.type,
-            "genre" :  self.genre,
-            "medium" :  self.medium,
-            "artist" :  self.artist,
-            "title" :  self.title
+            "id": self.id,
+            "user_id": self.user_id,
+            "type": self.type,
+            "genre": self.genre,
+            "medium": self.medium,
+            "artist": self.artist,
+            "title": self.title
         }
 
 
